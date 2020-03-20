@@ -20,6 +20,7 @@ import tacos.Ingredient.Type;
 import tacos.Order;
 import tacos.Taco;
 import tacos.data.IngredientRepository;
+import tacos.data.TacoRepository;
 
 @Slf4j
 @Controller
@@ -28,10 +29,13 @@ import tacos.data.IngredientRepository;
 public class DesignTacoController {
 
     private final IngredientRepository ingredientRepo;
+    private TacoRepository designRepo;
 
     @Autowired
-    public DesignTacoController(IngredientRepository ingredientRepo){
+    public DesignTacoController(IngredientRepository ingredientRepo,
+                                TacoRepository designRepo){
         this.ingredientRepo = ingredientRepo;
+        this.designRepo = designRepo;
     }
 
     @ModelAttribute(name = "order")
@@ -39,10 +43,12 @@ public class DesignTacoController {
         return new Order();
     }
 
-    @ModelAttribute(name = "ta")
+    @ModelAttribute(name = "taco")
     public Taco taco() {
         return new Taco();
     }
+
+
     @GetMapping
     public String showDesignForm(Model model) {
         //model.addAttribute("design", new Taco());
@@ -59,13 +65,15 @@ public class DesignTacoController {
 
 
     @PostMapping
-    public String processDesign(@Valid @ModelAttribute("design") Taco design, Errors errors, Model model) {
+    public String processDesign(@Valid Taco design, Errors errors, @ModelAttribute Order order) {
         if (errors.hasErrors()) {
-            return "design";
+            return "design";  // return to html page 'design'
         }
 
         // Save the taco design...
         // We'll do this in chapter 3
+        Taco saved = designRepo.save(design); // " 'design' from model passed by html session"
+        order.addDesign(saved);   // adds the Taco object to the Order that’s kept in the session.
         log.info("Processing design: " + design);
 
         return "redirect:/orders/current";
